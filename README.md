@@ -41,6 +41,8 @@ The project includes a web dashboard for displaying:
 
 The dashboard currently uses simulated sensor values for demonstration.
 
+[Open Live Dashboard](https://subanthana-cse.github.io/Rainwater-Harvesting-IoT/)
+
 ## 🧪 Simulation
 
 The Arduino circuit is simulated using Wokwi.
