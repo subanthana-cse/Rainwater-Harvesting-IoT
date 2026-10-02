@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Rainwater Harvesting Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+
+        <div class="header-content">
+
+            <div>
+                <span class="live-badge">● LIVE SIMULATION</span>
+
+                <h1>💧 Rainwater Harvesting</h1>
+
+                <p>IoT Based Water Level Monitoring System</p>
+            </div>
+
+            <div class="header-icon">
+                🌧️
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- Dashboard Cards -->
+        <section class="dashboard">
+
+            <div class="card water-card">
+
+                <div class="card-icon">💧</div>
+
+                <div>
+                    <h2>Water Level</h2>
+                    <p id="waterLevel">0 cm</p>
+                </div>
+
+            </div>
+
+
+            <div class="card percent-card">
+
+                <div class="card-icon">📊</div>
+
+                <div>
+                    <h2>Water Percentage</h2>
+                    <p id="percentage">0%</p>
+                </div>
+
+            </div>
+
+
+            <div class="card sensor-card">
+
+                <div class="card-icon">📡</div>
+
+                <div>
+                    <h2>Sensor Distance</h2>
+                    <p id="distance">0 cm</p>
+                </div>
+
+            </div>
+
+
+            <div class="card status-card">
+
+                <div class="card-icon">⚡</div>
+
+                <div>
+                    <h2>Status</h2>
+
+                    <p id="status">LOW</p>
+
+                    <div id="statusIndicator" class="status-indicator"></div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Water Tank -->
+        <section class="tank-section">
+
+            <div class="section-title">
+
+                <div>
+                    <span class="section-label">REAL-TIME MONITORING</span>
+                    <h2>💧 Water Tank</h2>
+                </div>
+
+                <span class="capacity">Capacity: 95 cm</span>
+
+            </div>
+
+
+            <div class="tank-container">
+
+                <div class="tank-scale">
+                    <span>100%</span>
+                    <span>75%</span>
+                    <span>50%</span>
+                    <span>25%</span>
+                    <span>0%</span>
+                </div>
+
+
+                <div class="tank">
+
+                    <div class="water" id="water"></div>
+
+                    <div class="tank-shine"></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="tank-value">
+
+                <span id="tankPercentage">0%</span>
+
+                <small>Current Tank Level</small>
+
+            </div>
+
+        </section>
+
+
+        <!-- Alert -->
+        <section class="alert-section">
+
+            <div class="alert-icon">
+                ⚠️
+            </div>
+
+            <div>
+
+                <h2>System Alert</h2>
+
+                <p id="alert">
+                    System is monitoring the water level.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- Information Row -->
+        <section class="info-grid">
+
+            <!-- Last Updated -->
+            <div class="info-card">
+
+                <div class="info-icon">🕒</div>
+
+                <div>
+                    <h3>Last Updated</h3>
+                    <p id="lastUpdated">Waiting for sensor data...</p>
+                </div>
+
+            </div>
+
+
+            <!-- Rainfall -->
+            <div class="info-card rainfall-card">
+
+                <div class="info-icon">🌧️</div>
+
+                <div>
+                    <h3>Rainfall</h3>
+                    <p id="rainfall">0 mm</p>
+                </div>
+
+            </div>
+
+
+            <!-- Collection -->
+            <div class="info-card collection-card">
+
+                <div class="info-icon">🚰</div>
+
+                <div>
+                    <h3>Collection Status</h3>
+                    <p id="collectionStatus">Waiting...</p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Sensor Simulation -->
+        <section class="control-section">
+
+            <div class="control-header">
+
+                <div>
+                    <span class="section-label">TEST MODE</span>
+                    <h2>🎛️ Sensor Simulation</h2>
+                </div>
+
+                <span class="simulation-badge">DEMO</span>
+
+            </div>
+
+
+            <p class="control-description">
+                Select a water level to simulate the sensor reading.
+            </p>
+
+
+            <div class="buttons">
+
+                <button class="high-btn" onclick="updateDashboard(10)">
+                    💧 High Water
+                </button>
+
+                <button class="medium-btn" onclick="updateDashboard(40)">
+                    🌊 Medium Water
+                </button>
+
+                <button class="low-btn" onclick="updateDashboard(80)">
+                    ⚠️ Low Water
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer>
+
+        <p>💧 Rainwater Harvesting Monitoring System</p>
+
+        <span>IoT • Smart Water Management • Sustainable Living</span>
+
+    </footer>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
