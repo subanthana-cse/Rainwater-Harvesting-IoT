@@ -44,6 +44,9 @@ The dashboard currently uses simulated sensor values for demonstration.
 ## 🧪 Simulation
 
 The Arduino circuit is simulated using Wokwi.
+You can view and run the Arduino simulation here:
+
+🔗 [Open Wokwi Simulation](https://wokwi.com/projects/476779840844201985)
 
 ## 📁 Project Structure
 
