@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "author": "Rainwater Harvesting IoT",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic",
+      "top": -100,
+      "left": 300,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "greenLed",
+      "top": 100,
+      "left": 350,
+      "attrs": {
+        "color": "green"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "yellowLed",
+      "top": 160,
+      "left": 350,
+      "attrs": {
+        "color": "yellow"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "redLed",
+      "top": 220,
+      "left": 350,
+      "attrs": {
+        "color": "red"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "greenResistor",
+      "top": 100,
+      "left": 450,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "yellowResistor",
+      "top": 160,
+      "left": 450,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "redResistor",
+      "top": 220,
+      "left": 450,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer",
+      "top": 280,
+      "left": 350,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "uno:5V", "ultrasonic:VCC", "red" ],
+    [ "uno:GND.1", "ultrasonic:GND", "black" ],
+    [ "uno:9", "ultrasonic:TRIG", "green" ],
+    [ "uno:10", "ultrasonic:ECHO", "blue" ],
+
+    [ "uno:2", "greenResistor:1", "green" ],
+    [ "greenResistor:2", "greenLed:A", "green" ],
+    [ "greenLed:C", "uno:GND.1", "black" ],
+
+    [ "uno:3", "yellowResistor:1", "yellow" ],
+    [ "yellowResistor:2", "yellowLed:A", "yellow" ],
+    [ "yellowLed:C", "uno:GND.1", "black" ],
+
+    [ "uno:4", "redResistor:1", "red" ],
+    [ "redResistor:2", "redLed:A", "red" ],
+    [ "redLed:C", "uno:GND.1", "black" ],
+
+    [ "uno:5", "buzzer:1", "purple" ],
+    [ "buzzer:2", "uno:GND.1", "black" ]
+  ]
+}
