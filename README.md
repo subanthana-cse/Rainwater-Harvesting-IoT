@@ -28,57 +28,35 @@ The system classifies the water level into:
 
 LED indicators and a buzzer provide status alerts.
 
-## 📊 Water Level Status
+## 🌐 Web Dashboard
 
-| Water Level | Status | Indicator |
-|---|---|---|
-| 0% – 20% | LOW | 🔴 Red LED + Buzzer |
-| 21% – 70% | MEDIUM | 🟡 Yellow LED |
-| 71% – 100% | FULL | 🟢 Green LED |
+The project includes a web dashboard for displaying:
 
-## 📐 Water Percentage Calculation
+- Water Level
+- Water Percentage
+- Sensor Distance
+- Tank Status
+- Rainfall
+- Collection Status
 
-Water Percentage = (Water Level / Tank Height) × 100
-
-The tank height used in this project is **95 cm**.
-
-## 🔌 Hardware Connections
-
-| Component | Arduino Pin |
-|---|---|
-| HC-SR04 TRIG | D9 |
-| HC-SR04 ECHO | D10 |
-| Green LED | D2 |
-| Yellow LED | D3 |
-| Red LED | D4 |
-| Buzzer | D5 |
-
-The HC-SR04 VCC is connected to 5V and GND is connected to GND.
-
-## 🔄 System Workflow
-
-```text
-HC-SR04 Sensor
-      ↓
-Measure Distance
-      ↓
-Arduino UNO
-      ↓
-Calculate Water Level
-      ↓
-Calculate Percentage
-      ↓
-Determine Status
-      ↓
-LOW / MEDIUM / FULL
-      ↓
-LED + Buzzer Alert
+The dashboard currently uses simulated sensor values for demonstration.
 
 ## 🧪 Simulation
 
 The Arduino circuit is simulated using Wokwi.
-
 You can view and run the Arduino simulation here:
 
 🔗 [Open Wokwi Simulation](https://wokwi.com/projects/476779840844201985)
 
+## 📁 Project Structure
+
+```text
+Rainwater-Harvesting-IoT/
+│
+├── index.html
+├── style.css
+├── app.js
+│
+└── Arduino/
+    ├── sketch.ino
+    └── diagram.json
