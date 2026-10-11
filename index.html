@@ -1,262 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Rainwater Harvesting Dashboard</title>
-
-    <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-    <!-- Header -->
-    <header>
-
-        <div class="header-content">
-
-            <div>
-                <span class="live-badge">● LIVE SIMULATION</span>
-
-                <h1>💧 Rainwater Harvesting</h1>
-
-                <p>IoT Based Water Level Monitoring System</p>
-            </div>
-
-            <div class="header-icon">
-                🌧️
-            </div>
-
-        </div>
-
-    </header>
-
-
-    <main>
-
-        <!-- Dashboard Cards -->
-        <section class="dashboard">
-
-            <div class="card water-card">
-
-                <div class="card-icon">💧</div>
-
-                <div>
-                    <h2>Water Level</h2>
-                    <p id="waterLevel">0 cm</p>
-                </div>
-
-            </div>
-
-
-            <div class="card percent-card">
-
-                <div class="card-icon">📊</div>
-
-                <div>
-                    <h2>Water Percentage</h2>
-                    <p id="percentage">0%</p>
-                </div>
-
-            </div>
-
-
-            <div class="card sensor-card">
-
-                <div class="card-icon">📡</div>
-
-                <div>
-                    <h2>Sensor Distance</h2>
-                    <p id="distance">0 cm</p>
-                </div>
-
-            </div>
-
-
-            <div class="card status-card">
-
-                <div class="card-icon">⚡</div>
-
-                <div>
-                    <h2>Status</h2>
-
-                    <p id="status">LOW</p>
-
-                    <div id="statusIndicator" class="status-indicator"></div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- Water Tank -->
-        <section class="tank-section">
-
-            <div class="section-title">
-
-                <div>
-                    <span class="section-label">REAL-TIME MONITORING</span>
-                    <h2>💧 Water Tank</h2>
-                </div>
-
-                <span class="capacity">Capacity: 95 cm</span>
-
-            </div>
-
-
-            <div class="tank-container">
-
-                <div class="tank-scale">
-                    <span>100%</span>
-                    <span>75%</span>
-                    <span>50%</span>
-                    <span>25%</span>
-                    <span>0%</span>
-                </div>
-
-
-                <div class="tank">
-
-                    <div class="water" id="water"></div>
-
-                    <div class="tank-shine"></div>
-
-                </div>
-
-            </div>
-
-
-            <div class="tank-value">
-
-                <span id="tankPercentage">0%</span>
-
-                <small>Current Tank Level</small>
-
-            </div>
-
-        </section>
-
-
-        <!-- Alert -->
-        <section class="alert-section">
-
-            <div class="alert-icon">
-                ⚠️
-            </div>
-
-            <div>
-
-                <h2>System Alert</h2>
-
-                <p id="alert">
-                    System is monitoring the water level.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <!-- Information Row -->
-        <section class="info-grid">
-
-            <!-- Last Updated -->
-            <div class="info-card">
-
-                <div class="info-icon">🕒</div>
-
-                <div>
-                    <h3>Last Updated</h3>
-                    <p id="lastUpdated">Waiting for sensor data...</p>
-                </div>
-
-            </div>
-
-
-            <!-- Rainfall -->
-            <div class="info-card rainfall-card">
-
-                <div class="info-icon">🌧️</div>
-
-                <div>
-                    <h3>Rainfall</h3>
-                    <p id="rainfall">0 mm</p>
-                </div>
-
-            </div>
-
-
-            <!-- Collection -->
-            <div class="info-card collection-card">
-
-                <div class="info-icon">🚰</div>
-
-                <div>
-                    <h3>Collection Status</h3>
-                    <p id="collectionStatus">Waiting...</p>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- Sensor Simulation -->
-        <section class="control-section">
-
-            <div class="control-header">
-
-                <div>
-                    <span class="section-label">TEST MODE</span>
-                    <h2>🎛️ Sensor Simulation</h2>
-                </div>
-
-                <span class="simulation-badge">DEMO</span>
-
-            </div>
-
-
-            <p class="control-description">
-                Select a water level to simulate the sensor reading.
-            </p>
-
-
-            <div class="buttons">
-
-                <button class="high-btn" onclick="updateDashboard(10)">
-                    💧 High Water
-                </button>
-
-                <button class="medium-btn" onclick="updateDashboard(40)">
-                    🌊 Medium Water
-                </button>
-
-                <button class="low-btn" onclick="updateDashboard(80)">
-                    ⚠️ Low Water
-                </button>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- Footer -->
-    <footer>
-
-        <p>💧 Rainwater Harvesting Monitoring System</p>
-
-        <span>IoT • Smart Water Management • Sustainable Living</span>
-
-    </footer>
-
-
-    <script src="app.js"></script>
-
-</body>
-
-</html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rainwater Tank Monitor</title>
+<style>
+:root{--bg:#e9f0ef;--panel:#fff;--ink:#12303a;--mute:#5d7480;--line:#cddad9;--water:#2a7fb8;--g:#3e9b5f;--y:#e0a21b;--r:#d2453b}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1e24;--panel:#162a32;--ink:#e6f0ef;--mute:#8ba3ad;--line:#27414b}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px}
+header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+h1{font:600 1.6rem Georgia,serif;margin:0}
+.conn{font-size:.9rem;color:var(--mute)}.conn i{display:inline-block;width:10px;height:10px;border-radius:50%;background:#999;margin-right:6px}
+.conn.on i{background:var(--g)}
+main{display:grid;grid-template-columns:260px 1fr;gap:20px}
+@media(max-width:700px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px}
+.tank{position:relative;height:340px;border:3px solid var(--ink);border-top:none;border-radius:0 0 18px 18px;overflow:hidden;background:var(--bg)}
+.water{position:absolute;bottom:0;left:0;right:0;height:0;background:linear-gradient(var(--water),#1d5f8a);transition:height .8s ease}
+.mark{position:absolute;left:0;right:0;border-top:1px dashed var(--mute);font-size:.75rem;color:var(--mute);padding-left:4px}
+.pct{position:absolute;inset:0;display:grid;place-items:center;font:700 2.6rem Georgia,serif;color:var(--ink);text-shadow:0 0 8px var(--panel)}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat div{border-left:3px solid var(--water);padding-left:10px}
+.stat b{display:block;font-size:1.7rem;font-variant-numeric:tabular-nums}.stat span{color:var(--mute);font-size:.85rem}
+.badge{display:inline-block;margin:18px 0 6px;padding:6px 20px;border-radius:6px;font-weight:700;font-size:1.3rem;color:#fff;background:#999;transition:background .4s}
+.row{display:flex;gap:28px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.dot{display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--line);margin-right:8px;vertical-align:middle;transition:.3s}
+.dot.g.on{background:var(--g);box-shadow:0 0 12px var(--g)}.dot.y.on{background:var(--y);box-shadow:0 0 12px var(--y)}.dot.r.on{background:var(--r);box-shadow:0 0 12px var(--r)}
+.dot.b.on{background:var(--r);animation:bz .5s infinite alternate}@keyframes bz{to{opacity:.3}}
+@media(prefers-reduced-motion:reduce){.dot.b.on{animation:none}.water{transition:none}}
+svg{width:100%;height:80px;margin-top:10px}
+.src{margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font:inherit;padding:6px 14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;cursor:pointer}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--water)}button.act{background:var(--water);color:#fff;border-color:var(--water)}
+textarea{width:100%;height:70px;margin-top:8px;font:13px monospace;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;display:none}
+h2{font-size:1rem;margin:20px 0 0;color:var(--mute);font-weight:600}
+</style></head><body><div class="wrap">
+<header><h1>Rainwater Harvesting Tank</h1><div class="conn" id="conn"><i></i><span id="connTxt">Not connected</span></div></header>
+<main>
+ <div class="panel"><div class="tank">
+  <div class="water" id="water"></div>
+  <div class="mark" style="bottom:80%">FULL 80%</div><div class="mark" style="bottom:30%">LOW 30%</div>
+  <div class="pct" id="pctBig">--%</div></div></div>
+ <div class="panel">
+  <div class="stat">
+   <div><b id="cm">--</b><span>Water level (cm)</span></div>
+   <div><b id="pct">--</b><span>Level (%)</span></div>
+   <div><b id="dist">--</b><span>Sensor distance (cm)</span></div></div>
+  <div class="badge" id="badge">WAITING</div>
+  <div class="row">
+   <span><i class="dot g" id="lg"></i>Green</span><span><i class="dot y" id="ly"></i>Yellow</span>
+   <span><i class="dot r" id="lr"></i>Red</span><span><i class="dot b" id="bz"></i>Buzzer <b id="bzTxt">OFF</b></span></div>
+  <h2>Last 60 readings (%)</h2>
+  <svg viewBox="0 0 300 80" preserveAspectRatio="none"><polyline id="line" fill="none" stroke="var(--water)" stroke-width="2"/></svg>
+  <div id="tsBox" style="display:none"><h2>ThingSpeak graph (Level %)</h2><iframe id="tsFrame" title="ThingSpeak chart" style="width:100%;height:260px;border:1px solid var(--line);border-radius:6px"></iframe></div>
+  <div class="src">
+   <span class="conn">Data source:</span>
+   <button id="bLive">Live (bridge)</button><button id="bPaste">Paste Serial</button><button id="bDemo">Demo</button><button id="bTs">ThingSpeak</button>
+   <textarea id="paste" placeholder='Paste Serial Monitor lines here, e.g. {"d":42.5,"cm":57.5,"pct":61,"st":"MEDIUM","g":0,"y":1,"r":0,"b":0}'></textarea>
+  </div></div>
+</main></div>
+<script>
+const $=id=>document.getElementById(id);
+const COL={LOW:"var(--g)",MEDIUM:"var(--y)",FULL:"var(--r)"};
+const TS_CHANNEL="PASTE_CHANNEL_ID_HERE"; // <-- ONLY CHANGE THIS: your ThingSpeak Channel ID (channel must be Public)
+let hist=[], ws=null, demoTimer=null, tsTimer=null;
+function update(o){
+  $("cm").textContent=o.cm.toFixed(1); $("pct").textContent=o.pct+"%"; $("dist").textContent=o.d.toFixed(1);
+  $("pctBig").textContent=o.pct+"%"; $("water").style.height=o.pct+"%";
+  $("badge").textContent=o.st; $("badge").style.background=COL[o.st];
+  $("lg").classList.toggle("on",!!o.g); $("ly").classList.toggle("on",!!o.y); $("lr").classList.toggle("on",!!o.r);
+  $("bz").classList.toggle("on",!!o.b); $("bzTxt").textContent=o.b?"ON":"OFF";
+  hist.push(o.pct); if(hist.length>60) hist.shift();
+  $("line").setAttribute("points",hist.map((v,i)=>(i*300/59)+","+(78-v*0.76)).join(" "));
+}
+function feed(text){ text.split("\n").forEach(l=>{l=l.trim(); if(l[0]=="{") try{update(JSON.parse(l))}catch(e){}}); }
+function status(on,t){$("conn").classList.toggle("on",on);$("connTxt").textContent=t}
+function tsPoll(){
+  fetch("https://api.thingspeak.com/channels/"+TS_CHANNEL+"/feeds.json?results=60").then(r=>r.json()).then(j=>{
+    const f=j.feeds||[]; if(!f.length){status(false,"ThingSpeak: no data yet");return;}
+    const n=x=>parseFloat(x)||0, S=["LOW","MEDIUM","FULL"];
+    hist=f.slice(0,-1).map(x=>n(x.field3)); const l=f[f.length-1], st=S[n(l.field4)]||"LOW";
+    update({d:n(l.field1),cm:n(l.field2),pct:n(l.field3),st:st,g:st=="LOW",y:st=="MEDIUM",r:st=="FULL",b:st=="FULL"});
+    status(true,"ThingSpeak: updated "+new Date(l.created_at).toLocaleTimeString());
+  }).catch(()=>status(false,"ThingSpeak: cannot connect"));
+}
+function mode(m){
+  if(ws){ws.onclose=null;ws.close();ws=null} clearInterval(demoTimer); clearInterval(tsTimer); $("tsBox").style.display="none"; status(false,"Not connected");
+  ["bLive","bPaste","bDemo","bTs"].forEach(b=>$(b).classList.remove("act")); $("paste").style.display="none";
+  if(m=="live"){ $("bLive").classList.add("act"); ws=new WebSocket("ws://localhost:8765");
+    ws.onopen=()=>status(true,"Live: Wokwi connected"); ws.onmessage=e=>feed(e.data);
+    ws.onclose=()=>{status(false,"Bridge not running - retrying");setTimeout(()=>mode("live"),2000)}; }
+  if(m=="paste"){ $("bPaste").classList.add("act"); $("paste").style.display="block"; status(true,"Paste mode"); }
+  if(m=="ts"){ $("bTs").classList.add("act"); $("tsBox").style.display="block";
+    $("tsFrame").src="https://thingspeak.com/channels/"+TS_CHANNEL+"/charts/3?dynamic=true&results=60&width=auto&height=240&title=Level+%25";
+    tsPoll(); tsTimer=setInterval(tsPoll,15000); }
+  if(m=="demo"){ $("bDemo").classList.add("act"); status(true,"Demo data"); let t=0;
+    demoTimer=setInterval(()=>{ t+=0.12; const d=52+46*Math.sin(t), cm=Math.min(95,Math.max(0,100-d)), pct=Math.round(cm/95*100);
+      const st=pct<30?"LOW":pct<80?"MEDIUM":"FULL";
+      update({d:d,cm:cm,pct:pct,st:st,g:st=="LOW",y:st=="MEDIUM",r:st=="FULL",b:st=="FULL"}); },1000); }
+}
+$("bLive").onclick=()=>mode("live"); $("bPaste").onclick=()=>mode("paste"); $("bDemo").onclick=()=>mode("demo"); $("bTs").onclick=()=>mode("ts");
+$("paste").oninput=e=>{feed(e.target.value)};
+mode("ts");
+</script></body></html>
