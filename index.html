@@ -4,7 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rainwater Harvesting | Smart Dashboard</title>
+  <meta name="theme-color" content="#082f49">
+
+  <title>Rainwater Harvesting | Smart IoT Dashboard</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,402 +15,814 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --navy: #082f49;
+      --blue: #0284c7;
+      --cyan: #06b6d4;
+      --background: #f1f5f9;
+      --muted: #64748b;
+    }
+
     body {
-      background: #f1f5f9;
-      font-family: Arial, sans-serif;
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f9ff, #f8fafc);
+      color: #0f172a;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(120deg, #082f49, #075985, #0891b2);
+      color: white;
+      box-shadow: 0 8px 28px rgba(8, 47, 73, 0.18);
     }
 
     .glass-card {
-      background: white;
+      background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 18px;
-      box-shadow: 0 5px 20px rgba(15, 23, 42, 0.04);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, 0.045);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-    .tank {
-      width: 150px;
-      height: 220px;
-      border: 5px solid #64748b;
-      border-radius: 18px 18px 28px 28px;
-      position: relative;
+    .glass-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 30px rgba(2, 132, 199, 0.10);
+    }
+
+    .metric-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .metric-value {
+      font-size: clamp(30px, 4vw, 42px);
+      font-weight: 800;
+      color: #0284c7;
+      line-height: 1.2;
+      margin-top: 12px;
+    }
+
+    .metric-unit {
+      font-size: 15px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .progress-track {
+      height: 9px;
+      background: #e2e8f0;
+      border-radius: 20px;
       overflow: hidden;
+      margin-top: 20px;
+    }
+
+    #levelBar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22d3ee, #0284c7);
+      border-radius: 20px;
+      transition: width 0.8s ease;
+    }
+
+    /* Water tank */
+    .tank {
+      width: 155px;
+      height: 225px;
+      position: relative;
+      margin: 20px auto;
+      overflow: hidden;
+      border: 5px solid #64748b;
+      border-radius: 17px 17px 27px 27px;
       background: #f8fafc;
-      margin: auto;
+      box-shadow: inset 0 0 15px rgba(15, 23, 42, 0.08);
+    }
+
+    .tank::before {
+      content: "";
+      position: absolute;
+      z-index: 3;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 43px,
+        rgba(100, 116, 139, 0.12) 44px,
+        transparent 45px
+      );
     }
 
     .water {
       position: absolute;
       bottom: 0;
+      left: 0;
       width: 100%;
       height: 0%;
-      background: linear-gradient(180deg, #38bdf8, #0284c7);
-      transition: height 0.8s ease;
+      background: linear-gradient(
+        180deg,
+        #67e8f9 0%,
+        #06b6d4 35%,
+        #0284c7 100%
+      );
+      transition: height 1s ease-in-out;
     }
 
     .water::before {
       content: "";
       position: absolute;
-      top: -8px;
+      top: -7px;
       left: -10%;
       width: 120%;
-      height: 18px;
-      background: rgba(255,255,255,0.28);
+      height: 16px;
       border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      animation: wave 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes wave {
+      from { transform: translateX(-5px); }
+      to { transform: translateX(5px); }
+    }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .status-low {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .status-medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-full {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* Connection indicator */
+    .connection-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f59e0b;
+      flex-shrink: 0;
+    }
+
+    .connected {
+      background: #4ade80;
+      box-shadow: 0 0 10px rgba(74, 222, 128, 0.55);
+    }
+
+    .disconnected {
+      background: #f87171;
+    }
+
+    /* Buttons */
+    .refresh-btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #0284c7, #0e7490);
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .refresh-btn:hover {
+      background: linear-gradient(135deg, #0369a1, #155e75);
+      transform: translateY(-2px);
+    }
+
+    .refresh-btn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
+
+    .alert-box {
+      border-radius: 13px;
+      padding: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    .alert-low {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .alert-medium {
+      background: #fffbeb;
+      color: #92400e;
+      border-color: #fde68a;
+    }
+
+    .alert-full {
+      background: #f0fdf4;
+      color: #166534;
+      border-color: #bbf7d0;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 290px;
+      width: 100%;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    footer {
+      color: #64748b;
+      text-align: center;
+      padding: 28px 15px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 640px) {
+      header .header-inner {
+        align-items: flex-start;
+      }
+
+      .glass-card {
+        padding: 18px;
+        border-radius: 16px;
+      }
+
+      .tank {
+        width: 140px;
+        height: 200px;
+      }
+
+      .refresh-btn {
+        width: 100%;
+      }
+
+      .chart-container {
+        height: 240px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 
-<body class="text-slate-800">
+<body>
 
-  <!-- Header -->
-  <header class="bg-slate-950 text-white">
-    <div class="max-w-7xl mx-auto px-5 py-6 flex flex-col sm:flex-row
-                sm:items-center sm:justify-between gap-4">
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner max-w-7xl mx-auto px-5 py-7
+                flex flex-col sm:flex-row sm:justify-between
+                sm:items-center gap-5">
+
       <div>
-        <p class="text-cyan-400 text-sm font-semibold tracking-widest">
-          IoT WATER MANAGEMENT
+        <p class="text-cyan-300 text-xs font-bold tracking-widest">
+          SMART WATER MANAGEMENT
         </p>
-        <h1 class="text-2xl sm:text-3xl font-bold mt-1">
-          Rainwater Harvesting Dashboard
+
+        <h1 class="text-2xl sm:text-3xl font-extrabold mt-2">
+          Rainwater Harvesting
         </h1>
-        <p class="text-slate-400 text-sm mt-2">
-          Smart tank monitoring and water conservation
+
+        <p class="text-sky-100 text-sm mt-2">
+          IoT Based Smart Tank Monitoring Dashboard
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span id="connectionDot"
-          class="w-3 h-3 rounded-full bg-slate-500"></span>
-        <span id="connectionText" class="text-sm">Connecting...</span>
+      <div class="flex items-center gap-3">
+        <div id="connectionDot" class="connection-dot"></div>
+
+        <div>
+          <p id="connectionText" class="text-sm font-bold">
+            Connecting...
+          </p>
+          <p class="text-xs text-sky-100">
+            ThingSpeak Cloud
+          </p>
+        </div>
       </div>
+
     </div>
   </header>
 
   <main class="max-w-7xl mx-auto px-5 py-8">
 
-    <!-- Status banner -->
-    <section class="glass-card p-5 mb-6 flex flex-col sm:flex-row
-                    sm:items-center sm:justify-between gap-4">
-      <div>
-        <p class="text-sm text-slate-500">CURRENT TANK STATUS</p>
-        <h2 id="tankStatus" class="text-2xl font-bold mt-1">
-          Waiting for data
-        </h2>
-        <p id="statusMessage" class="text-slate-500 text-sm mt-1">
-          Connecting to ThingSpeak...
-        </p>
-      </div>
+    <!-- TOP STATUS -->
+    <section class="glass-card mb-6">
+      <div class="flex flex-col md:flex-row md:justify-between
+                  md:items-center gap-5">
 
-      <button id="refreshButton"
-        class="bg-cyan-700 hover:bg-cyan-800 text-white px-5 py-3
-               rounded-xl font-semibold">
-        Refresh readings
-      </button>
+        <div>
+          <p class="metric-label tracking-wider">
+            CURRENT TANK STATUS
+          </p>
+
+          <div class="mt-3">
+            <span id="tankStatus" class="status-badge">
+              WAITING
+            </span>
+          </div>
+
+          <p id="statusMessage" class="text-sm text-slate-500 mt-3">
+            Waiting for the first sensor reading.
+          </p>
+        </div>
+
+        <button id="refreshButton" class="refresh-btn" type="button">
+          <span id="refreshIcon">↻</span>
+          Refresh Readings
+        </button>
+
+      </div>
     </section>
 
-    <!-- Metric cards -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+    <!-- METRIC CARDS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4
+                    gap-5 mb-6">
 
-      <article class="glass-card p-5">
-        <p class="text-sm text-slate-500">Water Level</p>
-        <div class="mt-3 flex items-end gap-2">
-          <span id="levelValue" class="text-4xl font-bold">--</span>
-          <span class="text-slate-500 mb-1">%</span>
+      <article class="glass-card">
+        <div class="flex items-center justify-between gap-2">
+          <p class="metric-label">Water Level</p>
+          <span class="text-2xl">💧</span>
         </div>
-        <div class="w-full bg-slate-100 rounded-full h-2 mt-5">
-          <div id="levelBar"
-            class="bg-cyan-600 h-2 rounded-full transition-all"
-            style="width:0%"></div>
+
+        <div class="metric-value">
+          <span id="levelValue">--</span>
+          <span class="metric-unit">%</span>
         </div>
+
+        <div class="progress-track">
+          <div id="levelBar"></div>
+        </div>
+
+        <p class="text-xs text-slate-400 mt-3">
+          Current tank capacity
+        </p>
       </article>
 
-      <article class="glass-card p-5">
-        <p class="text-sm text-slate-500">Water Height</p>
-        <div class="mt-3">
-          <span id="heightValue" class="text-4xl font-bold">--</span>
-          <span class="text-slate-500">cm</span>
+      <article class="glass-card">
+        <div class="flex items-center justify-between gap-2">
+          <p class="metric-label">Water Height</p>
+          <span class="text-2xl">📏</span>
         </div>
-        <p class="text-sm text-slate-400 mt-4">Measured water height</p>
+
+        <div class="metric-value">
+          <span id="heightValue">--</span>
+          <span class="metric-unit">cm</span>
+        </div>
+
+        <p class="text-xs text-slate-400 mt-5">
+          Estimated water height
+        </p>
       </article>
 
-      <article class="glass-card p-5">
-        <p class="text-sm text-slate-500">Sensor Distance</p>
-        <div class="mt-3">
-          <span id="distanceValue" class="text-4xl font-bold">--</span>
-          <span class="text-slate-500">cm</span>
+      <article class="glass-card">
+        <div class="flex items-center justify-between gap-2">
+          <p class="metric-label">Sensor Distance</p>
+          <span class="text-2xl">📡</span>
         </div>
-        <p class="text-sm text-slate-400 mt-4">Sensor to water surface</p>
+
+        <div class="metric-value">
+          <span id="distanceValue">--</span>
+          <span class="metric-unit">cm</span>
+        </div>
+
+        <p class="text-xs text-slate-400 mt-5">
+          Sensor to water surface
+        </p>
       </article>
 
-      <article class="glass-card p-5">
-        <p class="text-sm text-slate-500">Last Updated</p>
-        <div id="updatedValue" class="text-xl font-bold mt-4">
+      <article class="glass-card">
+        <div class="flex items-center justify-between gap-2">
+          <p class="metric-label">Last Updated</p>
+          <span class="text-2xl">🕒</span>
+        </div>
+
+        <div id="updatedValue"
+             class="text-xl sm:text-2xl font-extrabold text-slate-800 mt-4">
           Waiting...
         </div>
-        <p class="text-sm text-slate-400 mt-4">Latest cloud reading</p>
+
+        <p class="text-xs text-slate-400 mt-5">
+          Latest cloud reading
+        </p>
       </article>
 
     </section>
 
-    <!-- Tank and chart -->
+    <!-- TANK AND CHART -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-      <article class="glass-card p-6">
-        <h3 class="font-bold text-lg">Live Tank View</h3>
-        <p class="text-sm text-slate-500 mt-1 mb-6">
-          Visual representation of water level
+      <article class="glass-card">
+        <h2 class="text-lg font-bold">Live Tank View</h2>
+
+        <p class="text-sm text-slate-500 mt-1">
+          Visual water level indicator
         </p>
 
         <div class="tank">
           <div id="tankWater" class="water"></div>
         </div>
 
-        <p class="text-center text-2xl font-bold mt-4">
+        <p class="text-center text-3xl font-extrabold text-sky-700">
           <span id="tankPercent">--</span>%
         </p>
-        <p class="text-center text-sm text-slate-500">
+
+        <p class="text-center text-sm text-slate-500 mt-2">
           Estimated tank level
         </p>
       </article>
 
-      <article class="glass-card p-6 lg:col-span-2">
+      <article class="glass-card lg:col-span-2">
         <div class="flex flex-col sm:flex-row sm:justify-between
-                    sm:items-center gap-2 mb-5">
+                    sm:items-start gap-3 mb-5">
+
           <div>
-            <h3 class="font-bold text-lg">Water Level History</h3>
-            <p class="text-sm text-slate-500">
+            <h2 class="text-lg font-bold">Water Level History</h2>
+            <p class="text-sm text-slate-500 mt-1">
               Recent readings from ThingSpeak
             </p>
           </div>
-          <span class="text-xs bg-cyan-50 text-cyan-800 px-3 py-2 rounded-lg">
-            Live data
+
+          <span class="text-xs font-bold text-cyan-800
+                       bg-cyan-50 rounded-lg px-3 py-2">
+            LIVE MONITORING
           </span>
+
         </div>
-        <div class="h-72">
+
+        <div class="chart-container">
           <canvas id="historyChart"></canvas>
         </div>
       </article>
 
     </section>
 
-    <!-- Alerts and information -->
+    <!-- ALERTS AND SYSTEM INFORMATION -->
     <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-      <article class="glass-card p-6">
-        <h3 class="font-bold text-lg mb-4">System Alerts</h3>
-        <div id="alertBox"
-          class="p-4 rounded-xl bg-slate-50 text-slate-600">
+      <article class="glass-card">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="text-2xl">🔔</span>
+          <h2 class="text-lg font-bold">System Alerts</h2>
+        </div>
+
+        <div id="alertBox" class="alert-box">
           Waiting for sensor data.
         </div>
+
         <p class="text-xs text-slate-400 mt-4">
-          Alerts are calculated from the latest sensor reading.
+          Alert status is based on the latest available reading.
         </p>
       </article>
 
-      <article class="glass-card p-6">
-        <h3 class="font-bold text-lg mb-4">System Information</h3>
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between gap-3">
-            <span class="text-slate-500">Platform</span>
-            <span class="font-semibold">ESP32 + ThingSpeak</span>
-          </div>
-          <div class="flex justify-between gap-3">
-            <span class="text-slate-500">Sensor</span>
-            <span class="font-semibold">HC-SR04</span>
-          </div>
-          <div class="flex justify-between gap-3">
-            <span class="text-slate-500">Refresh interval</span>
-            <span class="font-semibold">16 seconds</span>
-          </div>
-          <div class="flex justify-between gap-3">
-            <span class="text-slate-500">Data source</span>
-            <span class="font-semibold">ThingSpeak Cloud</span>
-          </div>
+      <article class="glass-card">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-2xl">⚙️</span>
+          <h2 class="text-lg font-bold">System Information</h2>
+        </div>
+
+        <div class="info-row">
+          <span class="text-slate-500">Controller</span>
+          <strong>ESP32</strong>
+        </div>
+
+        <div class="info-row">
+          <span class="text-slate-500">Sensor</span>
+          <strong>HC-SR04</strong>
+        </div>
+
+        <div class="info-row">
+          <span class="text-slate-500">Data Platform</span>
+          <strong>ThingSpeak</strong>
+        </div>
+
+        <div class="info-row">
+          <span class="text-slate-500">Auto Refresh</span>
+          <strong>16 seconds</strong>
+        </div>
+
+        <div class="info-row">
+          <span class="text-slate-500">Data Points</span>
+          <strong id="readingCount">0</strong>
         </div>
       </article>
 
     </section>
 
-    <footer class="text-center text-sm text-slate-500 py-8">
-      Smart Rainwater Harvesting and Monitoring System
-      <p class="mt-1">Powered by ESP32, IoT and Tailwind CSS</p>
+    <!-- FOOTER -->
+    <footer>
+      <p class="font-semibold text-slate-600">
+        Smart Rainwater Harvesting and Monitoring System
+      </p>
+      <p class="mt-2">
+        Powered by ESP32, HC-SR04, ThingSpeak and Tailwind CSS
+      </p>
     </footer>
 
   </main>
 
   <script>
-    // STEP 1: Replace this with your actual ThingSpeak Channel ID.
+    // ============================================
+    // THINGSPEAK CONFIGURATION
+    // ============================================
+
+    // Existing Channel ID from your submitted HTML.
     const CHANNEL_ID = "3531232";
 
-    // STEP 2: For a PUBLIC channel, leave this empty.
-    // For a PRIVATE channel, use its READ API KEY only.
+    // Leave empty if the channel is PUBLIC.
+    // For a PRIVATE channel, enter its READ API KEY.
+    // Never place the WRITE API KEY in this website.
     const READ_API_KEY = "";
 
-    const REFRESH_MS = 16000;
+    const REFRESH_INTERVAL = 16000;
 
     const $ = (id) => document.getElementById(id);
 
-    let chart;
+    let historyChart = null;
+    let requestInProgress = false;
+
+    // ============================================
+    // CONNECTION STATUS
+    // ============================================
 
     function setConnection(connected, message) {
-      $("connectionDot").className =
-        "w-3 h-3 rounded-full " +
-        (connected ? "bg-emerald-400" : "bg-red-500");
+      const dot = $("connectionDot");
+      const text = $("connectionText");
 
-      $("connectionText").textContent =
-        message || (connected ? "Connected" : "Disconnected");
+      dot.className = "connection-dot " +
+        (connected ? "connected" : "disconnected");
+
+      text.textContent = message ||
+        (connected ? "Connected" : "Disconnected");
     }
 
     function showError(message) {
       setConnection(false, "Connection error");
+
       $("statusMessage").textContent = message;
       $("alertBox").textContent = message;
-      $("alertBox").className =
-        "p-4 rounded-xl bg-red-50 text-red-700";
+      $("alertBox").className = "alert-box alert-low";
     }
 
-    function updateStatus(level, code) {
+    // ============================================
+    // TANK STATUS
+    // Field 4: 0 = LOW, 1 = MEDIUM, 2 = FULL
+    // ============================================
+
+    function updateStatus(level, statusCode) {
       let status;
       let message;
-      let color;
+      let badgeClass;
+      let alertClass;
 
-      // Use field4 when it contains a valid status code.
-      // Otherwise determine the status from the percentage.
-      if (code === 0 || code === 1 || code === 2) {
-        status = ["LOW", "MEDIUM", "FULL"][code];
+      if ([0, 1, 2].includes(statusCode)) {
+        status = ["LOW", "MEDIUM", "FULL"][statusCode];
       } else {
         status = level < 30 ? "LOW" :
                  level < 80 ? "MEDIUM" : "FULL";
       }
 
       if (status === "LOW") {
-        message = "Water level is low. Consider conserving water.";
-        color = "red";
+        message = "Water level is low. Monitor the tank and conserve water.";
+        badgeClass = "status-badge status-low";
+        alertClass = "alert-box alert-low";
       } else if (status === "MEDIUM") {
-        message = "Water level is moderate. Monitoring is normal.";
-        color = "amber";
+        message = "Water level is moderate. Continue monitoring.";
+        badgeClass = "status-badge status-medium";
+        alertClass = "alert-box alert-medium";
       } else {
-        message = "Tank is nearly full or full.";
-        color = "emerald";
+        message = "Tank is nearly full or full. Check available storage capacity.";
+        badgeClass = "status-badge status-full";
+        alertClass = "alert-box alert-full";
       }
 
       $("tankStatus").textContent = status;
+      $("tankStatus").className = badgeClass;
+
       $("statusMessage").textContent = message;
-
       $("alertBox").textContent = message;
-      $("alertBox").className =
-  "p-4 rounded-xl " +
-  (status === "LOW"
-    ? "bg-red-50 text-red-800"
-    : status === "MEDIUM"
-    ? "bg-amber-50 text-amber-800"
-    : "bg-emerald-50 text-emerald-800");
-
-      // Keep status text clear even if the CSS color changes.
-      $("tankStatus").style.color =
-        status === "LOW" ? "#dc2626" :
-        status === "MEDIUM" ? "#b45309" : "#047857";
+      $("alertBox").className = alertClass;
     }
 
-    function initChart() {
-      const ctx = $("historyChart");
+    // ============================================
+    // HISTORY CHART
+    // ============================================
 
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: [],
-          datasets: [{
-            label: "Water Level (%)",
-            data: [],
-            borderColor: "#0891b2",
-            backgroundColor: "rgba(8,145,178,0.12)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              min: 0,
-              max: 100,
-              title: {
+    function updateChart(feeds) {
+      const canvas = $("historyChart");
+
+      const labels = feeds.map(feed =>
+        new Date(feed.created_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
+      );
+
+      const values = feeds.map(feed => Number(feed.field3));
+
+      if (!historyChart) {
+        historyChart = new Chart(canvas, {
+          type: "line",
+
+          data: {
+            labels: labels,
+            datasets: [{
+              label: "Water Level (%)",
+              data: values,
+              borderColor: "#0284c7",
+              backgroundColor: "rgba(6, 182, 212, 0.14)",
+              fill: true,
+              tension: 0.35,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+              borderWidth: 3
+            }]
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+              legend: {
                 display: true,
-                text: "Water level (%)"
+                position: "bottom"
               }
             },
-            x: {
-              title: {
-                display: true,
-                text: "Reading time"
+
+            scales: {
+              y: {
+                min: 0,
+                max: 100,
+                title: {
+                  display: true,
+                  text: "Water Level (%)"
+                },
+                ticks: {
+                  stepSize: 20
+                }
+              },
+
+              x: {
+                title: {
+                  display: true,
+                  text: "Reading Time"
+                }
               }
             }
           }
-        }
-      });
+        });
+      } else {
+        historyChart.data.labels = labels;
+        historyChart.data.datasets[0].data = values;
+        historyChart.update();
+      }
+
+      $("readingCount").textContent = feeds.length;
     }
 
+    // ============================================
+    // FETCH LIVE THINGSPEAK DATA
+    // ============================================
+
     async function loadData() {
+      if (requestInProgress) return;
+
       if (!CHANNEL_ID || CHANNEL_ID === "YOUR_CHANNEL_ID") {
-        showError("Enter your ThingSpeak Channel ID in index.html.");
+        showError("Please enter your ThingSpeak Channel ID.");
         return;
       }
 
-      $("refreshButton").disabled = true;
-      $("refreshButton").textContent = "Refreshing...";
+      requestInProgress = true;
+
+      const button = $("refreshButton");
+      button.disabled = true;
+      button.textContent = "Loading readings...";
 
       try {
         let url =
-          `https://api.thingspeak.com/channels/${encodeURIComponent(CHANNEL_ID)}/feeds.json?results=20`;
+          "https://api.thingspeak.com/channels/" +
+          encodeURIComponent(CHANNEL_ID) +
+          "/feeds.json?results=20";
 
         if (READ_API_KEY.trim()) {
-          url += `&api_key=${encodeURIComponent(READ_API_KEY.trim())}`;
+          url += "&api_key=" +
+            encodeURIComponent(READ_API_KEY.trim());
         }
 
-        const response = await fetch(url, { cache: "no-store" });
+        const response = await fetch(url, {
+          cache: "no-store"
+        });
 
         if (!response.ok) {
-          throw new Error("ThingSpeak request failed: " + response.status);
+          throw new Error(
+            "ThingSpeak returned HTTP " + response.status +
+            ". Check channel access and API settings."
+          );
         }
 
         const data = await response.json();
 
-        if (!data.feeds || data.feeds.length === 0) {
-          throw new Error("No readings found. Check your channel and ESP32.");
+        if (!Array.isArray(data.feeds) || data.feeds.length === 0) {
+          throw new Error(
+            "No readings found. Check that ESP32 is sending data."
+          );
         }
 
-        // Only require field3 (water percentage) to be present.
-        // Missing field4 must not be incorrectly interpreted as LOW.
+        // Field 3 contains water percentage.
         const feeds = data.feeds.filter(feed =>
           feed.field3 !== null &&
           feed.field3 !== undefined &&
-          feed.field3 !== ""
+          feed.field3 !== "" &&
+          Number.isFinite(Number(feed.field3)) &&
+          Number(feed.field3) >= 0 &&
+          Number(feed.field3) <= 100
         );
 
-        if (!feeds.length) {
-          throw new Error("No water-level percentage found in field3.");
+        if (feeds.length === 0) {
+          throw new Error(
+            "No valid percentage values found in ThingSpeak Field 3."
+          );
         }
 
         const latest = feeds[feeds.length - 1];
 
         const level = Number(latest.field3);
-        const height = Number(latest.field2);
-        const distance = Number(latest.field1);
-        const code = latest.field4 === null ||
-                     latest.field4 === undefined ||
-                     latest.field4 === ""
-          ? null : Number(latest.field4);
 
-        if (!Number.isFinite(level) || level < 0 || level > 100) {
-          throw new Error("Invalid water-level percentage in field3.");
-        }
+        const height =
+          latest.field2 === null ||
+          latest.field2 === undefined ||
+          latest.field2 === ""
+            ? NaN : Number(latest.field2);
 
+        const distance =
+          latest.field1 === null ||
+          latest.field1 === undefined ||
+          latest.field1 === ""
+            ? NaN : Number(latest.field1);
+
+        const statusCode =
+          latest.field4 === null ||
+          latest.field4 === undefined ||
+          latest.field4 === ""
+            ? null : Number(latest.field4);
+
+        // Update metric values.
         $("levelValue").textContent = level.toFixed(1);
         $("levelBar").style.width = level + "%";
-        $("tankPercent").textContent = level.toFixed(1);
+
         $("tankWater").style.height = level + "%";
+        $("tankPercent").textContent = level.toFixed(1);
 
         $("heightValue").textContent =
           Number.isFinite(height) ? height.toFixed(1) : "--";
@@ -416,38 +830,40 @@
         $("distanceValue").textContent =
           Number.isFinite(distance) ? distance.toFixed(1) : "--";
 
+        const timestamp = new Date(latest.created_at);
+
         $("updatedValue").textContent =
-          new Date(latest.created_at).toLocaleTimeString();
+          Number.isNaN(timestamp.getTime())
+            ? "Unknown"
+            : timestamp.toLocaleTimeString();
 
-        updateStatus(level, code);
+        // Update status and graph.
+        updateStatus(level, statusCode);
+        updateChart(feeds);
 
-        chart.data.labels = feeds.map(feed =>
-          new Date(feed.created_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-          })
-        );
-
-        chart.data.datasets[0].data = feeds.map(feed =>
-          Number(feed.field3)
-        );
-
-        chart.update();
         setConnection(true, "Connected");
+
       } catch (error) {
-        console.error(error);
-        showError(error.message || "Could not load ThingSpeak data.");
+        console.error("ThingSpeak connection error:", error);
+        showError(
+          error.message || "Unable to retrieve ThingSpeak data."
+        );
       } finally {
-        $("refreshButton").disabled = false;
-        $("refreshButton").textContent = "Refresh readings";
+        requestInProgress = false;
+        button.disabled = false;
+        button.textContent = "↻ Refresh Readings";
       }
     }
 
+    // ============================================
+    // START DASHBOARD
+    // ============================================
+
     $("refreshButton").addEventListener("click", loadData);
 
-    initChart();
     loadData();
-    setInterval(loadData, REFRESH_MS);
+
+    setInterval(loadData, REFRESH_INTERVAL);
   </script>
 
 </body>
