@@ -61,7 +61,7 @@ h2{font-size:1rem;margin:20px 0 0;color:var(--mute);font-weight:600}
 <script>
 const $=id=>document.getElementById(id);
 const COL={LOW:"var(--g)",MEDIUM:"var(--y)",FULL:"var(--r)"};
-const TS_CHANNEL="PASTE_CHANNEL_ID_HERE"; // <-- ONLY CHANGE THIS: your ThingSpeak Channel ID (channel must be Public)
+const TS_CHANNEL="3531232"; // <-- ONLY CHANGE THIS: your ThingSpeak Channel ID (channel must be Public)
 let hist=[], ws=null, demoTimer=null, tsTimer=null;
 function update(o){
   $("cm").textContent=o.cm.toFixed(1); $("pct").textContent=o.pct+"%"; $("dist").textContent=o.d.toFixed(1);
