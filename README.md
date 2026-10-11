@@ -1,202 +1,228 @@
-Rainwater Harvesting IoT
+# 🌧️ Rainwater Tank Monitoring System using ESP32 and ThingSpeak
 
-IoT-Based Rainwater Harvesting and Water Level Monitoring System
+## 📌 Project Overview
 
-📌 Project Overview
+The **Rainwater Tank Monitoring System** is an IoT-based project designed to monitor the water level inside a rainwater storage tank using an ESP32 microcontroller and an HC-SR04 ultrasonic sensor.
 
-The Rainwater Harvesting IoT System is a smart water monitoring project designed to monitor the water level in a rainwater storage tank. It uses an ultrasonic sensor to measure the distance between the sensor and the water surface.
+The system measures the distance between the sensor and the water surface, calculates the water level in centimetres and percentage, and uploads the readings to the ThingSpeak IoT cloud platform through Wi-Fi.
 
-The measured distance is used to calculate the water level and water percentage. LED indicators and a buzzer provide alerts based on the tank status.
+Three LEDs indicate the tank status: LOW, MEDIUM, or FULL. A buzzer provides an audible alert when the tank reaches the configured FULL level.
 
-A web-based dashboard displays water monitoring information and provides options for viewing historical readings and ThingSpeak data.
+The project can be simulated online using Wokwi without requiring physical hardware.
 
-Live Dashboard: https://subanthana-cse.github.io/Rainwater-Harvesting-IoT/
-
-GitHub Repository: https://github.com/subanthana-cse/Rainwater-Harvesting-IoT
-
----
-
-🎯 Objectives
+## 🎯 Objectives
 
 - To monitor the water level in a rainwater storage tank.
-- To calculate the water level and percentage automatically.
-- To identify LOW, MEDIUM, and FULL tank conditions.
-- To provide visual and sound alerts using LEDs and a buzzer.
-- To display water monitoring information through a web dashboard.
-- To demonstrate how IoT technology can support efficient rainwater management.
+- To measure the distance between the ultrasonic sensor and the water surface.
+- To calculate the water level in centimetres and percentage.
+- To display LOW, MEDIUM, and FULL conditions using LEDs.
+- To activate a buzzer when the water level reaches the FULL threshold.
+- To upload sensor readings to ThingSpeak for online monitoring.
+- To demonstrate an IoT-based water monitoring solution using an online simulator.
 
-🔧 Hardware Components
+## ✨ Features
 
-Component| Purpose
-Arduino UNO| Processes sensor readings and controls outputs
-HC-SR04 Ultrasonic Sensor| Measures the distance to the water surface
-Green LED| Indicates a high or full water level
-Yellow LED| Indicates a medium water level
-Red LED| Indicates a low water level
-Buzzer| Provides an audible alert for a low water level
-220Ω Resistors| Limit current through the LEDs
-Breadboard and jumper wires| Connect the circuit components
+- **Real-time sensing:** Measures the distance to the water surface using an HC-SR04 sensor.
+- **Water level calculation:** Converts sensor distance into water height and percentage.
+- **LED indicators:** Uses three LEDs to indicate the current tank status.
+- **Audible alert:** Activates a buzzer when the tank level reaches 80% or above.
+- **Cloud monitoring:** Sends sensor data to ThingSpeak through Wi-Fi.
+- **Graphical visualization:** Displays historical sensor readings using ThingSpeak field charts.
+- **Online simulation:** Runs using the Wokwi ESP32 simulator.
 
-💻 Software and Technologies
+## 🧰 Hardware Components
 
-- Arduino IDE / Arduino C++ – For writing and executing the microcontroller program.
-- Wokwi – For simulating the circuit and testing the system.
-- HTML – For creating the dashboard structure.
-- CSS – For designing and styling the dashboard.
-- JavaScript – For dashboard updates, data display, and graph interactions.
-- GitHub – For storing the project source code.
-- GitHub Pages – For hosting the web dashboard.
-- ThingSpeak – For cloud-based IoT data storage and visualization when the connection is configured.
+| S. No. | Component | Purpose |
+|---|---|---|
+| 1 | ESP32 development board | Controls the system and connects to Wi-Fi |
+| 2 | HC-SR04 ultrasonic sensor | Measures the distance to the water surface |
+| 3 | Green LED | Indicates LOW water level |
+| 4 | Yellow LED | Indicates MEDIUM water level |
+| 5 | Red LED | Indicates FULL water level |
+| 6 | Buzzer | Produces an audible full-tank alert |
+| 7 | Resistors | Limit current through the LEDs |
+| 8 | Jumper wires | Connect the components |
 
-⚙️ Working Principle
+**Note:** The project can be tested virtually in Wokwi without purchasing the physical components.
 
-1. The HC-SR04 ultrasonic sensor sends an ultrasonic pulse towards the water surface.
-2. The sensor measures the time taken for the reflected pulse to return.
-3. The Arduino calculates the distance between the sensor and the water surface.
-4. The water level and percentage are calculated using the tank height.
-5. The system identifies the tank status as LOW, MEDIUM, or FULL.
-6. The corresponding LED and buzzer indicate the water status.
-7. The web dashboard displays monitoring information and graphs using the available data source.
+## 💻 Software and Platforms
 
-📐 Water Level Calculation
+- Arduino C++
+- Wokwi Online Simulator
+- ThingSpeak IoT Cloud
+- ESP32 Wi-Fi library
+- HTTPClient library
+- GitHub for source code and documentation
 
-Water Level
+## 🔌 Pin Configuration
 
-Water Level = Tank Height − Sensor Distance
+| ESP32 Pin | Component | Connection |
+|---|---|---|
+| GPIO 5 | HC-SR04 TRIG | Trigger signal |
+| GPIO 18 | HC-SR04 ECHO | Echo signal |
+| GPIO 21 | Green LED | LOW indication |
+| GPIO 22 | Yellow LED | MEDIUM indication |
+| GPIO 23 | Red LED | FULL indication |
+| GPIO 19 | Buzzer | Audible alert |
 
-Water Percentage
+**Important for physical hardware:** The HC-SR04 ECHO output is typically 5 V. Use a suitable voltage divider or level shifter before connecting it to the ESP32's 3.3 V GPIO input. Also connect all grounds together.
 
-Water Percentage = (Water Level / Tank Height) × 100
+## ⚙️ Working Principle
 
-For example, if the tank height is 100 cm and the sensor measures a distance of 30 cm:
+### 1. Distance Measurement
 
-- Water Level = 100 − 30 = 70 cm
-- Water Percentage = (70 / 100) × 100 = 70%
+The HC-SR04 sensor sends an ultrasonic pulse towards the water surface. The reflected pulse returns to the sensor, and the ESP32 measures the travel time.
 
-These calculations assume the sensor is positioned at the top of the tank and the tank height is configured correctly.
+The distance is calculated using:
 
-🚦 Water Level Status and Alerts
+Distance (cm) = (Echo time × 0.0343) / 2
 
-Water Percentage| Tank Status| Indicator
-0%–20%| LOW| Red LED + Buzzer
-21%–70%| MEDIUM| Yellow LED
-71%–100%| FULL| Green LED
+The division by two accounts for the sound travelling to the water surface and returning to the sensor.
 
-The system uses these thresholds to identify the water level condition. The corresponding indicator is activated according to the programmed logic.
+### 2. Water Level Calculation
 
-🌐 Web Dashboard
+The project uses these configured tank distances:
 
-The project includes a web-based dashboard for displaying water monitoring information.
+- Empty tank distance: 100 cm
+- Full tank distance: 5 cm
 
-Dashboard link: https://subanthana-cse.github.io/Rainwater-Harvesting-IoT/
+Usable water height = 100 − 5 = 95 cm
 
-Dashboard Features
+Water height is calculated by subtracting the measured distance from the empty-tank distance and limiting the result to the configured usable range.
 
-- Water Level: Displays the calculated water level in centimetres.
-- Water Percentage: Shows the percentage of water in the tank.
-- Sensor Distance: Displays the measured distance from the sensor to the water surface.
-- Tank Status: Indicates whether the tank is LOW, MEDIUM, or FULL.
-- LED and Buzzer Status: Displays the indicator and alert status.
-- Reading History: Provides a graph for viewing recent water-level percentage readings.
-- ThingSpeak Graph: Provides a section for visualizing water-level data from ThingSpeak.
-- Data Source Options: Includes Live (bridge), Paste Serial, Demo, and ThingSpeak options.
+Water Level Percentage = (Water Height / 95) × 100
 
-Current implementation note: The dashboard supports demonstration data and different data-source options. Live sensor monitoring requires the relevant connection to be configured and running. The dashboard may display “Not connected” when no live data source is connected.
+These distances are example settings and should be adjusted for the actual tank dimensions and sensor mounting position.
 
-☁️ IoT and ThingSpeak Integration
+### 3. Water Status Detection
 
-ThingSpeak is an IoT cloud platform that can store and visualize sensor data.
+| Water Percentage | Status | LED | Buzzer |
+|---|---|---|---|
+| Below 30% | LOW | Green | OFF |
+| 30% to below 80% | MEDIUM | Yellow | OFF |
+| 80% to 100% | FULL | Red | ON |
 
-The planned data fields for the Rainwater Tank channel are:
+The LEDs and buzzer are controlled automatically according to the calculated water level.
 
-Field| Description
-Field 1 – Distance_cm| Sensor-to-water distance in centimetres
-Field 2 – Level_cm| Calculated water level
-Field 3 – Level_percent| Water level percentage
-Field 4 – Status_code| Numeric code representing the tank status
+### 4. ThingSpeak Cloud Monitoring
 
-Once the data connection is configured, the monitoring program can send sensor readings to ThingSpeak using the channel's Write API Key. The dashboard can then retrieve the stored readings for visualization.
+The ESP32 connects to the Wokwi virtual Wi-Fi network and sends readings to ThingSpeak using an HTTP request.
 
-Note: Cloud data transmission and live monitoring should be marked as operational only after the connection has been tested successfully.
+The program attempts an update every 16 seconds. The ThingSpeak channel stores the values and displays them as charts.
 
-🧪 Simulation
+## ☁️ ThingSpeak Channel Configuration
 
-The Arduino circuit can be tested using Wokwi before implementing it with physical components.
+Create a ThingSpeak channel and enable the following four fields:
 
-Wokwi Simulation: https://wokwi.com/projects/476779840844201985
+| Field | Name | Description |
+|---|---|---|
+| Field 1 | Distance | Sensor-to-water distance in cm |
+| Field 2 | Water Level | Calculated water height in cm |
+| Field 3 | Water Percentage | Calculated water level from 0 to 100 |
+| Field 4 | Status Code | 0 = LOW, 1 = MEDIUM, 2 = FULL |
 
-Simulation helps verify the sensor calculation, LED indicators, buzzer logic, and overall circuit behaviour.
+Add your ThingSpeak Write API Key to the ESP32 code before running the simulation. Keep the key private.
 
-📁 Project Structure
+## 🚀 How to Run the Project
 
-Rainwater-Harvesting-IoT/
-│
-├── Arduino/
-│ ├── sketch.ino
-│ └── diagram.json
-│
-├── index.html
-├── style.css
-├── app.js
-└── README.md
+1. Open the Wokwi project using the link below.
+2. Open the ESP32 Arduino code in `sketch.ino`.
+3. Verify that the sensor and output pins match the circuit configuration.
+4. Create a ThingSpeak channel with all four fields enabled.
+5. Enter your ThingSpeak Write API Key in the code.
+6. Start the Wokwi simulation.
+7. Open the Serial Monitor and check the Wi-Fi connection status.
+8. Observe the measured distance, water height, percentage, and status.
+9. Wait for the periodic ThingSpeak update.
+10. Open the ThingSpeak channel's Private View to observe the uploaded data and charts.
 
-- "Arduino/sketch.ino" – Arduino program for sensor measurement and status alerts.
-- "Arduino/diagram.json" – Wokwi circuit configuration.
-- "index.html" – Dashboard layout and structure.
-- "style.css" – Dashboard styling and layout.
-- "app.js" – Dashboard data handling and display logic.
-- "README.md" – Project documentation.
+### 🔗 Project Links
 
-▶️ How to Run the Project
+- **Wokwi Simulation:** https://wokwi.com/projects/477576116030254081
+- **ThingSpeak:** https://thingspeak.mathworks.com/
 
-Step 1: Open the Simulation
+## 📊 Expected Output
 
-Open the Wokwi simulation link and start the circuit simulation.
+The Serial Monitor displays the measured distance, calculated water height, water percentage, and status.
 
-Step 2: Test the Sensor
+Example:
 
-Observe the sensor distance and verify the calculated water level.
+```text
+Rainwater Tank Monitor
+WiFi connected!
+Distance: 52.5 cm | Level: 47.5 cm | 50% | Status: MEDIUM
+ThingSpeak HTTP: 200 | Entry ID: 123456
+```
 
-Step 3: Check the Indicators
+This is an illustrative example. The actual values depend on the sensor simulation and tank settings.
 
-Verify that the LEDs and buzzer respond according to the programmed water-level thresholds.
+A successful ThingSpeak update generally returns a positive entry ID. An entry ID of `0` indicates that the update was not accepted.
 
-Step 4: Open the Dashboard
+## 📈 ThingSpeak Dashboard Output
 
-Visit the GitHub Pages dashboard to view the monitoring interface.
+The ThingSpeak channel provides graphical monitoring of:
 
-Step 5: Configure Live Data
+- Sensor distance over time.
+- Water height over time.
+- Water level percentage over time.
+- Tank status code over time.
 
-Select the appropriate dashboard data source and configure the required serial bridge or ThingSpeak connection before expecting real sensor readings.
+The graphs help observe changes in the tank's water level during simulation.
 
-🌱 Applications
+## 🌍 Applications
 
-- Rainwater storage tank monitoring.
-- Residential rainwater harvesting systems.
-- Schools and college campuses.
-- Small-scale water storage facilities.
-- Water conservation and management projects.
-- Educational IoT and embedded-system demonstrations.
+- Rainwater harvesting tanks.
+- Domestic water storage tanks.
+- Smart home water monitoring.
+- Educational IoT projects.
+- Water storage monitoring in small buildings.
+- Demonstration of cloud-connected sensor systems.
 
-🔮 Future Enhancements
+## ✅ Advantages
 
-- Integrate a physical water-level sensor with the dashboard.
-- Enable reliable real-time cloud data transmission.
-- Add rainfall measurement using a suitable rain sensor.
-- Generate notifications when the water level is low or the tank is full.
-- Store historical readings for long-term analysis.
-- Add automatic water-flow control using a suitable valve and controller.
-- Improve monitoring reliability with sensor-error detection.
+- Provides automated water level measurement.
+- Reduces the need for manual tank inspection.
+- Gives a visual indication of water status.
+- Provides an audible alert at the configured full level.
+- Supports online data monitoring and historical charts.
+- Can be tested without physical hardware using Wokwi.
 
-✅ Conclusion
+## ⚠️ Limitations
 
-The Rainwater Harvesting IoT System demonstrates how embedded systems, ultrasonic sensing, and web technologies can be combined to monitor water levels. It provides a foundation for understanding automated water measurement, status alerts, dashboard visualization, and IoT cloud integration.
+- Sensor readings may fluctuate because of surface movement or measurement errors.
+- The configured empty and full distances must match the tank installation.
+- Internet connectivity is required for cloud updates.
+- The buzzer and LEDs only provide local indications; this version does not automatically control a water pump.
+- The current status code is uploaded as a number rather than a text label.
+- The simulated setup does not prove that the hardware will perform identically in real-world conditions.
 
-The project supports the goal of improving awareness of stored rainwater and encouraging efficient water management through technology.
+## 🔮 Future Enhancements
 
----
+- Add automatic water pump control with suitable relay protection.
+- Send notifications when the tank is nearly empty or full.
+- Add a mobile-friendly monitoring dashboard.
+- Store additional sensor data and generate usage reports.
+- Improve measurement reliability using filtering and repeated readings.
+- Add overflow prevention and fault detection.
+- Deploy the system on a physical ESP32 with appropriate electrical protection.
 
-Project Type: Internet of Things (IoT)
-Domain: Smart Water Management
-Platform: Arduino, Wokwi, GitHub Pages
-Project Status: Dashboard and simulation available; live sensor and cloud connectivity depend on successful configuration.
+## 🔒 Security Notes
+
+- Never publish your ThingSpeak Write API Key in a public repository.
+- Use a placeholder such as `YOUR_NEW_WRITE_API_KEY` in published source code.
+- If a real API key has already been exposed, regenerate it and update your private working copy.
+- Keep private credentials outside committed source files.
+
+## 🏁 Conclusion
+
+The Rainwater Tank Monitoring System demonstrates how an ESP32, an HC-SR04 ultrasonic sensor, LEDs, a buzzer, and ThingSpeak can be combined to monitor water levels through an IoT-based approach.
+
+The system measures the water level, classifies the tank condition, provides local alerts, and uploads readings for online visualization. The Wokwi simulator makes it possible to test the program and circuit virtually before implementing the project with physical hardware.
+
+This project provides a foundation for developing more advanced smart water management and rainwater harvesting systems.
+
+## 👩‍💻 Author
+
+**Project:** Rainwater Tank Monitoring System using ESP32 and ThingSpeak
+
+**Repository:** `rainwater-tank-monitor`
