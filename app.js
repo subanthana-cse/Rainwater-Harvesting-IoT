@@ -1,257 +1,172 @@
+// RainSense dashboard: public ThingSpeak channel reader.
+// Keep your ThingSpeak WRITE API key in ESP32 firmware only, never in this file.
+const CHANNEL_ID = "3531232"; // Verify this is your channel ID.
+const READ_API_KEY = "";      // Leave blank for a public channel; use read key only if channel is private.
+const REFRESH_MS = 16000;
+const MAX_POINTS = 20;
 
-/* ========================================
-   RAINWATER HARVESTING - LIVE DATA
-   ======================================== */
+const el = (id) => document.getElementById(id);
+let chart;
+let readings = [];
+let lastStatus = null;
 
-// Replace with your real ThingSpeak Channel ID.
-const CHANNEL_ID = "YOUR_CHANNEL_ID";
-
-// Public channel: leave empty.
-// Private channel: enter the READ API KEY only.
-const READ_API_KEY = "";
-
-// ESP32 sends readings every 16 seconds.
-const REFRESH_INTERVAL = 16000;
-
-let historyChart = null;
-
-const getElement = (id) => document.getElementById(id);
-
-function setConnection(connected) {
-  const dot = getElement("connectionDot");
-  const text = getElement("connectionText");
-
-  if (dot) {
-    dot.style.backgroundColor = connected ? "#22c55e" : "#ef4444";
-  }
-
-  if (text) {
-    text.textContent = connected ? "Connected" : "Disconnected";
-  }
+function feedUrl(results = MAX_POINTS) {
+  const base = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=${results}`;
+  return READ_API_KEY ? `${base}&api_key=${encodeURIComponent(READ_API_KEY)}` : base;
 }
-
-function showError(message) {
-  setConnection(false);
-
-  const status = getElement("statusMessage");
-  const alert = getElement("alertBox");
-
-  if (status) status.textContent = message;
-
-  if (alert) {
-    alert.textContent = message;
-    alert.style.backgroundColor = "#fef2f2";
-    alert.style.color = "#b91c1c";
-  }
+function numeric(value) {
+  const n = Number(value);
+  return value !== null && value !== "" && Number.isFinite(n) ? n : null;
 }
-
-function updateTankStatus(level, statusCode) {
-  let status;
-  let message;
-  let color;
-
-  // Use field4 when it contains a valid status code.
-  if ([0, 1, 2].includes(statusCode)) {
-    status = ["LOW", "MEDIUM", "FULL"][statusCode];
-  } else {
-    status = level < 30 ? "LOW" :
-             level < 80 ? "MEDIUM" : "FULL";
+function getStatus(percent, statusCode) {
+  if (statusCode !== null) {
+    if (statusCode >= 2) return "FULL";
+    if (statusCode >= 1) return "MEDIUM";
+    return "LOW";
   }
-
-  if (status === "LOW") {
-    message = "Water level is low. Please monitor the tank.";
-    color = "#dc2626";
-  } else if (status === "MEDIUM") {
-    message = "Water level is moderate.";
-    color = "#b45309";
-  } else {
-    message = "Tank is nearly full or full.";
-    color = "#15803d";
-  }
-
-  const statusElement = getElement("tankStatus");
-  const messageElement = getElement("statusMessage");
-  const alertElement = getElement("alertBox");
-
-  if (statusElement) {
-    statusElement.textContent = status;
-    statusElement.style.color = color;
-  }
-
-  if (messageElement) {
-    messageElement.textContent = message;
-  }
-
-  if (alertElement) {
-    alertElement.textContent = message;
-    alertElement.style.color = color;
-    alertElement.style.backgroundColor =
-      status === "LOW" ? "#fef2f2" :
-      status === "MEDIUM" ? "#fffbeb" : "#f0fdf4";
-  }
+  if (percent >= 80) return "FULL";
+  if (percent >= 30) return "MEDIUM";
+  return "LOW";
 }
-
-function createOrUpdateChart(feeds) {
-  const canvas = getElement("historyChart");
-
-  if (!canvas || typeof Chart === "undefined") return;
-
-  const labels = feeds.map(feed =>
-    new Date(feed.created_at).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit"
-    })
-  );
-
-  const values = feeds.map(feed => Number(feed.field3));
-
-  if (!historyChart) {
-    historyChart = new Chart(canvas, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "Water Level (%)",
-          data: values,
-          borderColor: "#0284c7",
-          backgroundColor: "rgba(2, 132, 199, 0.12)",
-          fill: true,
-          tension: 0.3,
-          pointRadius: 3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            min: 0,
-            max: 100,
-            title: {
-              display: true,
-              text: "Water Level (%)"
-            }
-          }
-        }
+function setConnection(ok, message) {
+  el("connectionDot").classList.toggle("online", ok);
+  el("connectionText").textContent = message;
+  el("deviceStatus").textContent = ok ? "ONLINE" : "OFFLINE";
+  el("espStatus").textContent = ok ? "ONLINE" : "OFFLINE";
+  el("espStatus").className = `component-status ${ok ? "ok" : ""}`;
+  el("sensorStatus").textContent = ok ? "ACTIVE" : "WAITING";
+  el("sensorStatus").className = `component-status ${ok ? "ok" : ""}`;
+}
+function initChart() {
+  const ctx = el("levelChart");
+  if (!ctx || typeof Chart === "undefined") return;
+  chart = new Chart(ctx, {
+    type: "line",
+    data: { labels: [], datasets: [{
+      label: "Water level (%)", data: [], borderColor: "#39e8ff",
+      backgroundColor: "rgba(57,232,255,0.10)", fill: true, tension: 0.38,
+      pointRadius: 3, pointHoverRadius: 5, pointBackgroundColor: "#39e8ff",
+      borderWidth: 2
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 350 },
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: "#101a30", titleColor: "#edf5ff", bodyColor: "#39e8ff",
+        borderColor: "#334765", borderWidth: 1,
+        callbacks: { label: (context) => ` Water level: ${context.parsed.y}%` }
+      }},
+      scales: {
+        x: { grid: { color: "rgba(130,145,177,0.08)" }, ticks: { color: "#8291b1", maxTicksLimit: 6, font: { size: 10 } } },
+        y: { min: 0, max: 100, grid: { color: "rgba(130,145,177,0.12)" }, ticks: { color: "#8291b1", callback: value => `${value}%`, font: { size: 10 } } }
       }
-    });
-  } else {
-    historyChart.data.labels = labels;
-    historyChart.data.datasets[0].data = values;
-    historyChart.update();
-  }
+    }
+  });
 }
+function addAlert(status, percent, time) {
+  const list = el("alertsList");
+  const title = status === "FULL" ? "Tank is full — buzzer should be ON"
+    : status === "MEDIUM" ? "Water level is at a medium level"
+    : "Water level is low";
+  const description = `${percent.toFixed(1)}% water level · ${time}`;
+  const type = status === "FULL" ? "danger" : status === "LOW" ? "warning" : "";
+  const icon = status === "FULL" ? "!" : status === "LOW" ? "↓" : "✓";
+  if (list.querySelector(".empty-state")) list.innerHTML = "";
+  const item = document.createElement("div");
+  item.className = `alert-item ${type}`;
+  const iconEl = document.createElement("span");
+  iconEl.className = "alert-icon";
+  iconEl.textContent = icon;
+  const body = document.createElement("div");
+  const strong = document.createElement("strong");
+  strong.textContent = title;
+  const small = document.createElement("small");
+  small.textContent = description;
+  body.append(strong, small);
+  item.append(iconEl, body);
+  list.prepend(item);
+  while (list.children.length > 4) list.lastElementChild.remove();
+  el("alertCount").textContent = list.children.length;
+}
+function updateDashboard(feed, channel) {
+  const distance = numeric(feed.field1);
+  const waterHeight = numeric(feed.field2);
+  let percent = numeric(feed.field3);
+  const statusCode = numeric(feed.field4);
+  if (percent === null && waterHeight !== null) percent = Math.max(0, Math.min(100, waterHeight / 95 * 100));
+  if (percent === null && distance !== null) percent = Math.max(0, Math.min(100, (100 - distance) / 95 * 100));
+  if (percent === null) throw new Error("No usable readings in fields 1–3.");
+  percent = Math.max(0, Math.min(100, percent));
+  const level = waterHeight !== null ? waterHeight : percent / 100 * 95;
+  const status = getStatus(percent, statusCode);
+  const time = feed.created_at ? new Date(feed.created_at) : new Date();
+  const timeText = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-async function loadThingSpeakData() {
-  if (CHANNEL_ID === "YOUR_CHANNEL_ID" || !CHANNEL_ID.trim()) {
-    showError("Please enter your ThingSpeak Channel ID in app.js.");
-    return;
+  el("waterPercent").textContent = percent.toFixed(1);
+  el("waterHeight").textContent = level.toFixed(1);
+  el("distance").textContent = distance === null ? "—" : distance.toFixed(1);
+  el("percentBar").style.width = `${percent}%`;
+  el("tankWater").style.height = `${percent}%`;
+  el("tankPercent").innerHTML = `${percent.toFixed(1)}<span>%</span>`;
+  el("lastUpdated").textContent = timeText;
+
+  const banner = el("statusBanner");
+  banner.classList.remove("status-low", "status-medium", "status-full");
+  banner.classList.add(`status-${status.toLowerCase()}`);
+  el("statusTitle").textContent = status === "FULL" ? "Tank is FULL"
+    : status === "MEDIUM" ? "Water level is MEDIUM" : "Water level is LOW";
+  el("statusDescription").textContent = status === "FULL"
+    ? "Tank reached the full threshold. Check the red LED and buzzer."
+    : status === "MEDIUM" ? "Water storage is at a moderate level."
+    : "Water is low. Consider collecting or conserving water.";
+  el("statusPill").textContent = status;
+  el("statusSymbol").textContent = status === "FULL" ? "!" : status === "MEDIUM" ? "◉" : "↓";
+  el("buzzerText").textContent = status === "FULL" ? "Buzzer status: ON (expected)" : "Buzzer status: OFF (expected)";
+  el("buzzerDot").className = `tiny-dot ${status === "FULL" ? "" : "online"}`;
+  el("buzzerComponent").textContent = status === "FULL" ? "ALERT" : "READY";
+  el("buzzerComponent").className = `component-status ${status === "FULL" ? "alert" : "ok"}`;
+
+  if (status !== lastStatus) {
+    addAlert(status, percent, timeText);
+    lastStatus = status;
   }
-
-  const refreshButton = getElement("refreshButton");
-
-  if (refreshButton) {
-    refreshButton.disabled = true;
-    refreshButton.textContent = "Refreshing...";
+  readings = (channel?.feeds || []).map(item => {
+    const p = numeric(item.field3);
+    const h = numeric(item.field2);
+    const d = numeric(item.field1);
+    const value = p !== null ? p : h !== null ? h / 95 * 100 : d !== null ? (100 - d) / 95 * 100 : null;
+    return { time: new Date(item.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), value };
+  }).filter(item => item.value !== null).slice(-MAX_POINTS);
+  if (chart) {
+    chart.data.labels = readings.map(r => r.time);
+    chart.data.datasets[0].data = readings.map(r => Math.max(0, Math.min(100, r.value)));
+    chart.update();
   }
-
+  el("chartSummary").textContent = readings.length ? `${readings.length} readings loaded` : "No history yet";
+}
+async function loadData() {
+  el("refreshBtn").classList.add("loading");
   try {
-    let url =
-      `https://api.thingspeak.com/channels/${encodeURIComponent(CHANNEL_ID)}/feeds.json?results=20`;
-
-    if (READ_API_KEY.trim()) {
-      url += `&api_key=${encodeURIComponent(READ_API_KEY.trim())}`;
-    }
-
-    const response = await fetch(url, { cache: "no-store" });
-
-    if (!response.ok) {
-      throw new Error("ThingSpeak HTTP error: " + response.status);
-    }
-
+    const response = await fetch(feedUrl(MAX_POINTS), { cache: "no-store" });
+    if (!response.ok) throw new Error(`ThingSpeak request failed (${response.status})`);
     const data = await response.json();
-
-    if (!Array.isArray(data.feeds) || data.feeds.length === 0) {
-      throw new Error("No readings found. Check ThingSpeak channel data.");
-    }
-
-    // Field 3 is the water percentage.
-    const feeds = data.feeds.filter(feed =>
-      feed.field3 !== null &&
-      feed.field3 !== undefined &&
-      feed.field3 !== "" &&
-      Number.isFinite(Number(feed.field3)) &&
-      Number(feed.field3) >= 0 &&
-      Number(feed.field3) <= 100
-    );
-
-    if (feeds.length === 0) {
-      throw new Error("Field 3 does not contain valid water percentages.");
-    }
-
+    const feeds = data.feeds || [];
     const latest = feeds[feeds.length - 1];
-
-    const level = Number(latest.field3);
-    const height = Number(latest.field2);
-    const distance = Number(latest.field1);
-
-    const statusCode =
-      latest.field4 === null ||
-      latest.field4 === undefined ||
-      latest.field4 === ""
-        ? null
-        : Number(latest.field4);
-
-    const levelValue = getElement("levelValue");
-    const levelBar = getElement("levelBar");
-    const tankWater = getElement("tankWater");
-    const tankPercent = getElement("tankPercent");
-    const heightValue = getElement("heightValue");
-    const distanceValue = getElement("distanceValue");
-    const updatedValue = getElement("updatedValue");
-
-    if (levelValue) levelValue.textContent = level.toFixed(1);
-    if (levelBar) levelBar.style.width = level + "%";
-    if (tankWater) tankWater.style.height = level + "%";
-    if (tankPercent) tankPercent.textContent = level.toFixed(1);
-
-    if (heightValue) {
-      heightValue.textContent =
-        Number.isFinite(height) ? height.toFixed(1) : "--";
-    }
-
-    if (distanceValue) {
-      distanceValue.textContent =
-        Number.isFinite(distance) ? distance.toFixed(1) : "--";
-    }
-
-    if (updatedValue) {
-      updatedValue.textContent =
-        new Date(latest.created_at).toLocaleTimeString();
-    }
-
-    updateTankStatus(level, statusCode);
-    createOrUpdateChart(feeds);
-    setConnection(true);
-
+    if (!latest) throw new Error("No data found. Check the channel ID and ensure ESP32 has uploaded readings.");
+    updateDashboard(latest, data);
+    setConnection(true, "ThingSpeak connected");
   } catch (error) {
-    console.error("ThingSpeak error:", error);
-    showError(error.message || "Unable to fetch sensor readings.");
+    setConnection(false, "Connection/data error");
+    el("statusTitle").textContent = "Unable to load readings";
+    el("statusDescription").textContent = error.message || "Check internet and ThingSpeak settings.";
+    el("chartSummary").textContent = "Data unavailable";
+    console.error("Dashboard error:", error);
   } finally {
-    if (refreshButton) {
-      refreshButton.disabled = false;
-      refreshButton.textContent = "Refresh readings";
-    }
+    el("refreshBtn").classList.remove("loading");
   }
 }
-
-// Manual refresh button.
-const refreshButton = getElement("refreshButton");
-
-if (refreshButton) {
-  refreshButton.addEventListener("click", loadThingSpeakData);
-}
-
-// Initial data load and automatic updates.
-loadThingSpeakData();
-setInterval(loadThingSpeakData, REFRESH_INTERVAL);
+document.addEventListener("DOMContentLoaded", () => {
+  initChart();
+  el("refreshBtn").addEventListener("click", loadData);
+  loadData();
+  window.setInterval(loadData, REFRESH_MS);
+});
