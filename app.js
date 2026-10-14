@@ -1,92 +1,126 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RainSense - Rainwater Tank Monitor</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body data-status="MEDIUM">
+// RainSense dashboard - matches sketch.ino (Arduino Uno + HC-SR04)
+const CFG = { EMPTY: 100, FULL: 5, LOW: 30, HIGH: 80 }; // same values as the sketch
+const $ = (id) => document.getElementById(id);
+const history = [];
 
-<header class="top">
-  <div>
-    <h1>RainSense</h1>
-    <p>Rainwater harvesting tank monitor, Arduino Uno with HC-SR04 ultrasonic sensor</p>
-  </div>
-  <a class="btn ghost" href="https://wokwi.com/projects/476779840844201985" target="_blank" rel="noopener">Open Wokwi simulation</a>
-</header>
+// Same calculation as the Arduino code
+function fromDistance(d) {
+  const usable = CFG.EMPTY - CFG.FULL;
+  const cm = Math.min(Math.max(CFG.EMPTY - d, 0), usable);
+  const pct = Math.round((cm / usable) * 100);
+  const st = pct < CFG.LOW ? "LOW" : pct < CFG.HIGH ? "MEDIUM" : "FULL";
+  return { d, cm, pct, st, g: st === "LOW", y: st === "MEDIUM", r: st === "FULL", b: st === "FULL" };
+}
 
-<main class="grid">
+const ADVICE = {
+  LOW: "Tank is low. Conserve water until the next rain.",
+  MEDIUM: "Tank level is healthy.",
+  FULL: "Tank is full. Buzzer on, stop the inlet.",
+};
 
-  <section class="card tank-card" aria-label="Tank level">
-    <div class="tank-wrap">
-      <div class="tank">
-        <div class="water" id="water"></div>
-        <span class="mark m-full">FULL 80%</span>
-        <span class="mark m-low">LOW 30%</span>
-      </div>
-    </div>
-    <div class="big">
-      <div class="pct"><span id="pct">0</span><small>%</small></div>
-      <div class="pill" id="status">MEDIUM</div>
-      <p class="note" id="advice">Tank level is healthy.</p>
-    </div>
-  </section>
+function render(x) {
+  $("pct").textContent = x.pct;
+  $("dist").textContent = Number(x.d).toFixed(1);
+  $("cm").textContent = Number(x.cm).toFixed(1);
+  $("status").textContent = x.st;
+  $("advice").textContent = ADVICE[x.st] || "";
+  $("water").style.height = x.pct + "%";
+  document.body.dataset.status = x.st;
+  $("led-g").classList.toggle("on", x.g);
+  $("led-y").classList.toggle("on", x.y);
+  $("led-r").classList.toggle("on", x.r);
+  $("led-b").classList.toggle("on", x.b);
+  history.push(x.pct);
+  if (history.length > 60) history.shift();
+  drawChart();
+}
 
-  <section class="card readings" aria-label="Sensor readings">
-    <div class="tile"><span>Sensor to water</span><b id="dist">0.0</b><i>cm</i></div>
-    <div class="tile"><span>Water height</span><b id="cm">0.0</b><i>cm</i></div>
-    <div class="tile"><span>Usable depth</span><b>95</b><i>cm</i></div>
-  </section>
+// Level history chart
+function drawChart() {
+  const c = $("chart"), dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth, h = 180;
+  c.width = w * dpr; c.height = h * dpr;
+  const g = c.getContext("2d");
+  g.scale(dpr, dpr);
+  g.clearRect(0, 0, w, h);
+  const y = (p) => h - 10 - (p / 100) * (h - 20);
 
-  <section class="card outputs" aria-label="Indicators">
-    <h2>Indicators</h2>
-    <div class="leds">
-      <div class="led" id="led-g"><u></u>Green<br><small>Low</small></div>
-      <div class="led" id="led-y"><u></u>Yellow<br><small>Medium</small></div>
-      <div class="led" id="led-r"><u></u>Red<br><small>Full</small></div>
-      <div class="led" id="led-b"><u></u>Buzzer<br><small>Full alarm</small></div>
-    </div>
-  </section>
+  g.font = "11px Sora, sans-serif";
+  g.setLineDash([4, 4]); g.lineWidth = 1;
+  [[CFG.HIGH, "FULL"], [CFG.LOW, "LOW"]].forEach(([p, t]) => {
+    g.strokeStyle = "rgba(165,166,216,.4)";
+    g.beginPath(); g.moveTo(0, y(p)); g.lineTo(w, y(p)); g.stroke();
+    g.fillStyle = "#a5a6d8"; g.fillText(t + " " + p + "%", 6, y(p) - 4);
+  });
+  g.setLineDash([]);
+  if (history.length < 2) return;
 
-  <section class="card chart-card" aria-label="Level history">
-    <h2>Level history</h2>
-    <canvas id="chart" height="180"></canvas>
-  </section>
+  const step = w / 59;
+  const grad = g.createLinearGradient(0, 0, w, 0);
+  grad.addColorStop(0, "#4f9dff"); grad.addColorStop(1, "#8b5cf6");
+  g.strokeStyle = grad; g.lineWidth = 3; g.lineJoin = "round";
+  g.beginPath();
+  history.forEach((p, i) => {
+    const px = w - (history.length - 1 - i) * step;
+    i ? g.lineTo(px, y(p)) : g.moveTo(px, y(p));
+  });
+  g.stroke();
+}
 
-  <section class="card source" aria-label="Data source">
-    <h2>Data source</h2>
-    <div class="tabs">
-      <button class="btn" data-tab="demo">Demo slider</button>
-      <button class="btn" data-tab="serial">Arduino by USB</button>
-      <button class="btn" data-tab="paste">Paste Wokwi output</button>
-    </div>
+// One JSON line from the Arduino / Wokwi Serial Monitor
+function handleLine(line) {
+  line = line.trim();
+  if (line[0] !== "{") return false; // ignore the human-readable lines
+  try {
+    const j = JSON.parse(line);
+    render({ d: j.d, cm: j.cm, pct: j.pct, st: j.st, g: !!j.g, y: !!j.y, r: !!j.r, b: !!j.b });
+    return true;
+  } catch { return false; }
+}
 
-    <div class="pane" id="pane-demo">
-      <label for="slider">Distance from sensor to water: <b id="sv">50</b> cm</label>
-      <input type="range" id="slider" min="5" max="100" step="1" value="50">
-      <p class="hint">Same maths as the sketch. Move the slider to see LOW, MEDIUM and FULL.</p>
-    </div>
+// Tabs
+function showTab(name) {
+  document.querySelectorAll(".pane").forEach((p) => (p.hidden = p.id !== "pane-" + name));
+  document.querySelectorAll(".tabs .btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  $("msg").textContent = { demo: "Demo mode", serial: "Not connected", paste: "Waiting for pasted data" }[name];
+}
+document.querySelectorAll(".tabs .btn").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
 
-    <div class="pane" id="pane-serial" hidden>
-      <button class="btn solid" id="connect">Connect Arduino</button>
-      <p class="hint">Works in Chrome or Edge with a real Uno at 9600 baud.</p>
-    </div>
+// Demo slider
+$("slider").addEventListener("input", (e) => {
+  $("sv").textContent = e.target.value;
+  render(fromDistance(Number(e.target.value)));
+});
 
-    <div class="pane" id="pane-paste" hidden>
-      <textarea id="paste" rows="4" placeholder='Paste lines from the Wokwi Serial Monitor, for example:
-{"d":52.3,"cm":47.7,"pct":50,"st":"MEDIUM","g":0,"y":1,"r":0,"b":0}'></textarea>
-      <button class="btn solid" id="apply">Show readings</button>
-    </div>
-    <p class="msg" id="msg">Demo mode</p>
-  </section>
+// Paste output from Wokwi Serial Monitor
+$("apply").addEventListener("click", () => {
+  history.length = 0;
+  const n = $("paste").value.split("\n").filter(handleLine).length;
+  $("msg").textContent = n ? n + " reading(s) loaded" : "No JSON lines found. Copy lines that start with {";
+});
 
-</main>
+// Real Arduino over USB (Chrome / Edge)
+$("connect").addEventListener("click", async () => {
+  if (!("serial" in navigator)) { $("msg").textContent = "Web Serial needs Chrome or Edge on a computer."; return; }
+  try {
+    const port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 9600 });
+    $("msg").textContent = "Live from Arduino";
+    const dec = new TextDecoderStream();
+    port.readable.pipeTo(dec.writable);
+    const reader = dec.readable.getReader();
+    let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += value;
+      const lines = buf.split("\n");
+      buf = lines.pop();
+      lines.forEach(handleLine);
+    }
+  } catch (err) { $("msg").textContent = "Connection failed: " + err.message; }
+});
 
-<footer>Subanthana MD, Sensor and Instrumentation project</footer>
-<script src="app.js"></script>
-</body>
-</html>
+window.addEventListener("resize", drawChart);
+showTab("demo");
+render(fromDistance(50));
