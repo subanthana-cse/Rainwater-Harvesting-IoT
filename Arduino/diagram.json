@@ -1,7 +1,7 @@
 {
   "version": 1, "author": "Rainwater Monitor", "editor": "wokwi",
   "parts": [
-    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
     { "type": "wokwi-hc-sr04", "id": "sensor", "top": -190, "left": 20, "attrs": { "distance": "60" } },
     { "type": "wokwi-led", "id": "ledG", "top": -150, "left": 230, "attrs": { "color": "limegreen" } },
     { "type": "wokwi-led", "id": "ledY", "top": -150, "left": 290, "attrs": { "color": "yellow" } },
@@ -12,14 +12,14 @@
     { "type": "wokwi-buzzer", "id": "bz", "top": -170, "left": 430, "attrs": { "volume": "0.1" } }
   ],
   "connections": [
-    ["esp:5V", "sensor:VCC", "red", []],
-    ["esp:GND.1", "sensor:GND", "black", []],
-    ["esp:5", "sensor:TRIG", "green", []],
-    ["esp:18", "sensor:ECHO", "blue", []],
-    ["esp:21", "r1:1", "green", []], ["r1:2", "ledG:A", "green", []], ["ledG:C", "esp:GND.1", "black", []],
-    ["esp:22", "r2:1", "gold", []],  ["r2:2", "ledY:A", "gold", []],  ["ledY:C", "esp:GND.1", "black", []],
-    ["esp:23", "r3:1", "red", []],   ["r3:2", "ledR:A", "red", []],   ["ledR:C", "esp:GND.1", "black", []],
-    ["esp:19", "bz:2", "orange", []], ["bz:1", "esp:GND.1", "black", []]
+    ["uno:5V", "sensor:VCC", "red", []],
+    ["uno:GND.1", "sensor:GND", "black", []],
+    ["uno:9", "sensor:TRIG", "green", []],
+    ["uno:10", "sensor:ECHO", "blue", []],
+    ["uno:4", "r1:1", "green", []], ["r1:2", "ledG:A", "green", []], ["ledG:C", "uno:GND.1", "black", []],
+    ["uno:5", "r2:1", "gold", []],  ["r2:2", "ledY:A", "gold", []],  ["ledY:C", "uno:GND.1", "black", []],
+    ["uno:6", "r3:1", "red", []],   ["r3:2", "ledR:A", "red", []],   ["ledR:C", "uno:GND.1", "black", []],
+    ["uno:7", "bz:2", "orange", []], ["bz:1", "uno:GND.1", "black", []]
   ],
   "dependencies": {}
 }
